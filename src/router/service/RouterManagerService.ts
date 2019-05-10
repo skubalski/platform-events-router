@@ -24,16 +24,13 @@ export class RouterManagerService {
   }
 
   public async run() {
-    await this.init();
-    this.subscribeRouterConfigChanges();
-    this.subscribeRouterRegistration();
-    this.unsubscribeRouterRegistration();
-  }
-
-  private async init(): Promise<void> {
     await this.messageBroker.connect();
     await this.databaseListener.connect();
     await this.retrieveRouterConfigs();
+    this.subscribeRouterConfigChanges();
+    this.subscribeRouterRegistration();
+    this.unsubscribeRouterRegistration();
+    await this.sendRouterConfigs();
   }
 
   private async retrieveRouterConfigs(): Promise<void> {
@@ -59,10 +56,7 @@ export class RouterManagerService {
         this.addRouterConfigById(message.config);
         const routerServiceId: string | null = this.getMinRouterService();
         if (!isNil(routerServiceId)) {
-          this.messageBroker.publish<RouterConfig>(
-            this.buildRouterServiceTopic(BrokerTopic.ROUTER_CONFIG_ADD, routerServiceId),
-            message.config
-          );
+          await this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_ADD, routerServiceId, message.config);
         }
       }
     );
@@ -73,10 +67,7 @@ export class RouterManagerService {
         this.addRouterConfigById(message.config);
         const routerServiceId: string | null = this.findRouterService(message.config.id);
         if (!isNil(routerServiceId)) {
-          this.messageBroker.publish<RouterConfig>(
-            this.buildRouterServiceTopic(BrokerTopic.ROUTER_CONFIG_CHANGE, routerServiceId),
-            message.config
-          );
+          await this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_CHANGE, routerServiceId, message.config);
         }
       }
     );
@@ -87,16 +78,13 @@ export class RouterManagerService {
         this.removeRouterConfigById(message.config);
         const routerServiceId: string | null = this.findRouterService(message.config.id);
         if (!isNil(routerServiceId)) {
-          this.messageBroker.publish<RouterConfig>(
-            this.buildRouterServiceTopic(BrokerTopic.ROUTER_CONFIG_DELETE, routerServiceId),
-            message.config
-          );
+          await this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_DELETE, routerServiceId, message.config);
         }
       }
     );
   }
 
-  private subscribeRouterRegistration() {
+  private subscribeRouterRegistration(): void {
     this.messageBroker.subscribe<MessageBrokerMessage>(
       BrokerTopic.ROUTER_REGISTER,
       async (message, replayTo) => {
@@ -113,7 +101,7 @@ export class RouterManagerService {
     );
   }
 
-  private unsubscribeRouterRegistration() {
+  private unsubscribeRouterRegistration(): void {
     this.messageBroker.subscribe<RouterRegistration>(
       BrokerTopic.ROUTER_UNREGISTER,
       async (message) => {
@@ -121,6 +109,10 @@ export class RouterManagerService {
         // todo: split remaining configs for other services
       }
     );
+  }
+
+  private async sendRouterConfigs(): Promise<void> {
+
   }
 
   private registerRouterService(): string {
@@ -158,6 +150,17 @@ export class RouterManagerService {
       }
     }
     return null;
+  }
+
+  private async sendMessageToRouterService(
+    topic: BrokerTopic,
+    routerServiceId: string,
+    configs: RouterConfig | RouterConfig[]
+  ): Promise<void> {
+    await this.messageBroker.publish<RouterConfig[]>(
+      this.buildRouterServiceTopic(topic, routerServiceId),
+      Array.isArray(configs) ? configs : [configs]
+    );
   }
 
   private generateRouterServiceId(): string {

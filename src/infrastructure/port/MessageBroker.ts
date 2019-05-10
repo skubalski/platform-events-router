@@ -7,7 +7,7 @@ export type SubscriptionCallback<T extends MessageBrokerMessage> = (message: T, 
 export interface MessageBroker {
   connect(): Promise<void>;
 
-  publish<T extends MessageBrokerMessage>(topic: BrokerTopic | string, message: T, replayTo?: string): Promise<void>;
+  publish<T extends MessageBrokerMessage>(topic: BrokerTopic | string, message?: T, replayTo?: string): Promise<void>;
 
   subscribe<T extends MessageBrokerMessage>(topic: BrokerTopic | string, cb: SubscriptionCallback<T>): void;
 }
