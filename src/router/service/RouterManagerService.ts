@@ -55,7 +55,7 @@ export class RouterManagerService {
   private subscribeRouterConfigChanges(): void {
     this.databaseListener.subscribe<RouterConfigChange>(
       DatabaseTopic.ROUTER_CONFIG_ADD,
-      async (message: RouterConfigChange) => {
+      async (message) => {
         this.addRouterConfigById(message.config);
         const routerServiceId: string | null = this.getMinRouterService();
         if (!isNil(routerServiceId)) {
@@ -69,7 +69,7 @@ export class RouterManagerService {
 
     this.databaseListener.subscribe<RouterConfigChange>(
       DatabaseTopic.ROUTER_CONFIG_CHANGE,
-      async (message: RouterConfigChange) => {
+      async (message) => {
         this.addRouterConfigById(message.config);
         const routerServiceId: string | null = this.findRouterService(message.config.id);
         if (!isNil(routerServiceId)) {
@@ -83,7 +83,7 @@ export class RouterManagerService {
 
     this.databaseListener.subscribe<RouterConfigChange>(
       DatabaseTopic.ROUTER_CONFIG_DELETE,
-      async (message: RouterConfigChange) => {
+      async (message) => {
         this.removeRouterConfigById(message.config);
         const routerServiceId: string | null = this.findRouterService(message.config.id);
         if (!isNil(routerServiceId)) {
@@ -99,7 +99,7 @@ export class RouterManagerService {
   private subscribeRouterRegistration() {
     this.messageBroker.subscribe<MessageBrokerMessage>(
       BrokerTopic.ROUTER_REGISTER,
-      async (message: MessageBrokerMessage, replayTo: string) => {
+      async (message, replayTo) => {
         const routerServiceId: string = this.registerRouterService();
 
         await this.messageBroker.publish<RouterRegistration>(
