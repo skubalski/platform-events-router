@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "class-transformer": "^0.2.2",
+    "lodash": "^4.17.11",
     "node-rdkafka": "^2.6.1",
     "pg": "^7.10.0",
     "reflect-metadata": "^0.1.13",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@types/jsforce": "^1.9.5",
+    "@types/lodash": "^4.14.125",
     "@types/pg": "^7.4.14",
     "ts-node": "^8.1.0",
     "tslint": "^5.16.0",

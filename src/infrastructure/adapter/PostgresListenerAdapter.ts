@@ -1,6 +1,9 @@
+import 'reflect-metadata';
 import { DatabaseListener, DatabaseListenerMessage } from '../port/DatabaseListener';
 import { DatabaseTopic } from '../../config/database/DatabaseTopic';
+import { Service } from 'typedi';
 
+@Service()
 export class PostgresListenerAdapter implements DatabaseListener {
   public async connect(): Promise<void> {
     // todo: tbi
