@@ -2,22 +2,22 @@
   "name": "platform-events-router",
   "version": "1.0.0",
   "engines": {
-    "node": "12.1.x",
+    "node": "9.11.x",
     "npm": "6.9.x"
   },
   "dependencies": {
     "class-transformer": "^0.2.2",
+    "inversify": "^5.0.1",
     "lodash": "^4.17.11",
     "node-rdkafka": "^2.6.1",
     "pg": "^7.10.0",
     "reflect-metadata": "^0.1.13",
-    "typedi": "^0.8.0",
-    "typeorm": "^0.2.17",
-    "typeorm-typedi-extensions": "^0.2.3"
+    "typeorm": "^0.2.17"
   },
   "devDependencies": {
     "@types/jsforce": "^1.9.5",
     "@types/lodash": "^4.14.125",
+    "@types/node": "^12.0.0",
     "@types/pg": "^7.4.14",
     "ts-node": "^8.1.0",
     "tslint": "^5.16.0",
