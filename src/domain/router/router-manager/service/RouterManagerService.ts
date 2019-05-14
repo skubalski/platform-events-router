@@ -10,7 +10,7 @@ import { RouterRegistration } from '../../message/broker/RouterRegistration';
 import { RouterConfigChange } from '../message/database/RouterConfigChange';
 import { isNil } from 'lodash';
 import { RouterConfigChanges } from '../../message/broker/RouterConfigChanges';
-import { RouterConfigManager } from '../helper/RouterConfigManager';
+import { RouterConfigManager } from '../../helper/RouterConfigManager';
 import { RouterServiceUtility } from '../../utility/RouterServiceUtility';
 import { RouterServiceIdGenerator } from '../utility/RouterServiceIdGenerator';
 import { RouterServiceManager } from '../helper/RouterServiceManager';

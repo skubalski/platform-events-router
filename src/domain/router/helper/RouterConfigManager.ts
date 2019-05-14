@@ -1,4 +1,4 @@
-import { RouterConfig } from '../entity/RouterConfig';
+import { RouterConfig } from '../router-manager/entity/RouterConfig';
 
 export class RouterConfigManager {
   private routerConfigById: Map<number, RouterConfig> = new Map();
