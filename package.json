@@ -12,6 +12,7 @@
     "node-rdkafka": "^2.6.1",
     "pg": "^7.10.0",
     "reflect-metadata": "^0.1.13",
+    "rxjs": "^6.5.2",
     "typedi": "^0.8.0",
     "typeorm": "^0.2.17",
     "typeorm-typedi-extensions": "^0.2.3",

@@ -1,11 +1,8 @@
 import { DatabaseTopic } from '../../config/database/DatabaseTopic';
-
-export interface DatabaseListenerMessage {}
-
-type SubscriptionCallback<T extends DatabaseListenerMessage> = (message: T) => Promise<void>;
+import { Observable } from 'rxjs';
 
 export interface DatabaseListener {
-  subscribe<T extends DatabaseListenerMessage>(topic: DatabaseTopic, callback: SubscriptionCallback<T>): void;
+  subscribe<T>(topic: DatabaseTopic): Observable<T>;
 
-  publish<T extends DatabaseListenerMessage>(topic: DatabaseTopic, message: T): Promise<void>;
+  publish<T>(topic: DatabaseTopic, message: T): Observable<void>;
 }

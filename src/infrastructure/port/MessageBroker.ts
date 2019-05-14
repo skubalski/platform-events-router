@@ -1,18 +1,17 @@
 import { BrokerTopic } from '../../config/broker/BrokerTopic';
+import { Observable } from 'rxjs';
 
-export interface MessageBrokerMessage {}
-
-export type SubscriptionCallback<T extends MessageBrokerMessage> = (message: T, replayTo?: string) => Promise<void>;
+export interface MessageBrokerMessage<T> {
+  message: T;
+  replayTo?: string;
+}
 
 export interface MessageBroker {
-  publish<T extends MessageBrokerMessage>(topic: BrokerTopic | string, message?: T, replayTo?: string): Promise<void>;
+  publish<T>(topic: BrokerTopic | string, message?: T, replayTo?: string): Observable<void>;
 
-  subscribe<T extends MessageBrokerMessage>(topic: BrokerTopic | string, cb: SubscriptionCallback<T>): void;
+  subscribe<T>(topic: BrokerTopic | string): Observable<MessageBrokerMessage<T>>;
 
   unsubscribe(topic: BrokerTopic | string): void;
 
-  requestOnce<T extends MessageBrokerMessage, R extends MessageBrokerMessage>(
-    topic: BrokerTopic | string,
-    message?: T
-  ): Promise<R>;
+  requestOnce<T, R>(topic: BrokerTopic | string, message?: T): Observable<R>;
 }

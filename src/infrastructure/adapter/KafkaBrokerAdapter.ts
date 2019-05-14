@@ -1,35 +1,34 @@
 import 'reflect-metadata';
-import { MessageBroker, MessageBrokerMessage, SubscriptionCallback } from '../port/MessageBroker';
+import { MessageBroker } from '../port/MessageBroker';
 import { BrokerTopic } from '../../config/broker/BrokerTopic';
 import { Service } from 'typedi';
+import { Observable, of } from 'rxjs';
 
 @Service()
 export class KafkaBrokerAdapter implements MessageBroker {
-  public subscribe<T extends MessageBrokerMessage>(
-    topic: BrokerTopic,
-    cb: SubscriptionCallback<T>,
-    replayTo?: string
-  ): void {
-    // todo: tbi
-  }
-
-  public async requestOnce<T extends MessageBrokerMessage, R extends MessageBrokerMessage>(
-    topic: BrokerTopic | string,
-    message?: T
-  ): Promise<R> {
-    // todo: tbi
-    return <R> {};
-  }
-
-  public unsubscribe(topic: BrokerTopic | string): void {
-    // todo: tbi
-  }
-
-  public async publish<T extends MessageBrokerMessage>(
+  public publish<T>(
     topic: BrokerTopic | string,
     message?: T,
     replayTo?: string
-  ): Promise<void> {
+  ): Observable<void> {
+    // todo: tbi
+    return of();
+  }
+
+  public requestOnce<T, R>(
+    topic: BrokerTopic | string,
+    message?: T
+  ): Observable<R> {
+    // todo: tbi
+    return of();
+  }
+
+  public subscribe<T>(topic: BrokerTopic | string): Observable<T> {
+    // todo: tbi
+    return of();
+  }
+
+  public unsubscribe(topic: BrokerTopic | string): void {
     // todo: tbi
   }
 }

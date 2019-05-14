@@ -1,18 +1,18 @@
 import 'reflect-metadata';
-import { DatabaseListener, DatabaseListenerMessage } from '../port/DatabaseListener';
+import { DatabaseListener } from '../port/DatabaseListener';
 import { DatabaseTopic } from '../../config/database/DatabaseTopic';
 import { Service } from 'typedi';
+import { Observable, of } from 'rxjs';
 
 @Service()
 export class PostgresListenerAdapter implements DatabaseListener {
-  public async publish<T extends DatabaseListenerMessage>(topic: DatabaseTopic, message: T): Promise<void> {
+  public publish<T>(topic: DatabaseTopic, message: T): Observable<void> {
     // todo: tbi
+    return of();
   }
 
-  public subscribe<T extends DatabaseListenerMessage>(
-    topic: DatabaseTopic,
-    callback: (message: T) => Promise<void>
-  ): void {
+  public subscribe<T>(topic: DatabaseTopic): Observable<T> {
     // todo: tbi
+    return of();
   }
 }

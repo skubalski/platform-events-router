@@ -1,5 +1,3 @@
-import { MessageBrokerMessage } from '../../../../infrastructure/port/MessageBroker';
-
-export interface RouterRegistration extends MessageBrokerMessage {
+export interface RouterRegistration {
   id: string;
 }

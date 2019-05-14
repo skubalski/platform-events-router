@@ -14,6 +14,8 @@ import { RouterConfigManager } from '../helper/RouterConfigManager';
 import { RouterServiceUtility } from '../../utility/RouterServiceUtility';
 import { RouterServiceIdGenerator } from '../utility/RouterServiceIdGenerator';
 import { RouterServiceManager } from '../helper/RouterServiceManager';
+import { map, filter, switchMap, mergeMap } from 'rxjs/operators';
+import { Observable, concat } from 'rxjs';
 
 @Service()
 export class RouterManagerService {
@@ -36,95 +38,140 @@ export class RouterManagerService {
 
   private routerServiceManager: RouterServiceManager = new RouterServiceManager();
 
-  public async run() {
-    await this.retrieveRouterConfigs();
-    this.subscribeRouterConfigActions();
-    this.subscribeRouterRegistration();
-    this.unsubscribeRouterRegistration();
+  public run() {
+    concat(
+      this.retrieveRouterConfigs(),
+      this.subscribeRouterConfigActions(),
+      this.subscribeRouterRegistration(),
+      this.unsubscribeRouterRegistration()
+    )
+      .subscribe();
   }
 
-  private async retrieveRouterConfigs(): Promise<void> {
-    const routerConfigs: RouterConfig[] = await this.routerConfigRepository.getAllActive();
-    this.routerConfigService.set(routerConfigs);
+  private retrieveRouterConfigs(): Observable<void> {
+    return this.routerConfigRepository.getAllActive()
+      .pipe(
+        mergeMap(routerConfigs => routerConfigs),
+        map(routerConfig => this.routerConfigService.add(routerConfig))
+      );
   }
 
-  private subscribeRouterConfigActions(): void {
-    this.subscribeRouterConfigAdd();
-    this.subscribeRouterConfigChange();
-    this.subscribeRouterConfigDelete();
-  }
-
-  private subscribeRouterConfigDelete(): void {
-    this.databaseListener.subscribe<RouterConfigChange>(
-      DatabaseTopic.ROUTER_CONFIG_DELETE,
-      async (message) => {
-        this.routerConfigService.delete(message.config);
-        const routerServiceId: string | null = this.routerServiceManager.findRouterService(message.config.id);
-        if (!isNil(routerServiceId)) {
-          await this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_DELETE, routerServiceId, message.config);
-        }
-      }
+  private subscribeRouterConfigActions(): Observable<void> {
+    return concat(
+      this.subscribeRouterConfigAdd(),
+      this.subscribeRouterConfigChange(),
+      this.subscribeRouterConfigDelete()
     );
   }
 
-  private subscribeRouterConfigChange(): void {
-    this.databaseListener.subscribe<RouterConfigChange>(
-      DatabaseTopic.ROUTER_CONFIG_CHANGE,
-      async (message) => {
-        this.routerConfigService.add(message.config);
-        const routerServiceId: string | null = this.routerServiceManager.findRouterService(message.config.id);
-        if (!isNil(routerServiceId)) {
-          await this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_CHANGE, routerServiceId, message.config);
-        }
-      }
-    );
+  private subscribeRouterConfigDelete(): Observable<void> {
+    return this.databaseListener.subscribe<RouterConfigChange>(DatabaseTopic.ROUTER_CONFIG_DELETE)
+      .pipe(
+        map(
+          (message) => {
+            this.routerConfigService.delete(message.config);
+            return message;
+          }
+        ),
+        map(
+          (message) => {
+            const routerServiceId: string | null = this.routerServiceManager.findRouterService(message.config.id);
+            return {
+              routerServiceId,
+              ...message
+            };
+          }
+        ),
+        filter(({ routerServiceId }) => !isNil(routerServiceId)),
+        switchMap(
+          ({ routerServiceId, config }) =>
+            this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_DELETE, routerServiceId!, config)
+        )
+      );
   }
 
-  private subscribeRouterConfigAdd(): void {
-    this.databaseListener.subscribe<RouterConfigChange>(
-      DatabaseTopic.ROUTER_CONFIG_ADD,
-      async (message) => {
-        this.routerConfigService.add(message.config);
-        const routerServiceId: string | null = this.routerServiceManager.getMinRouterService();
-        if (!isNil(routerServiceId)) {
-          await this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_ADD, routerServiceId, message.config);
-        }
-      }
-    );
+  private subscribeRouterConfigChange(): Observable<void> {
+    return this.databaseListener.subscribe<RouterConfigChange>(DatabaseTopic.ROUTER_CONFIG_DELETE)
+      .pipe(
+        map(
+          (message) => {
+            this.routerConfigService.add(message.config);
+            return message;
+          }
+        ),
+        map(
+          (message) => {
+            return {
+              ...message,
+              routerServiceId: this.routerServiceManager.findRouterService(message.config.id)
+            };
+          }
+        ),
+        filter(({ routerServiceId }) => !isNil(routerServiceId)),
+        switchMap(
+          ({ routerServiceId, config }) =>
+            this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_CHANGE, routerServiceId!, config)
+        )
+      );
   }
 
-  private subscribeRouterRegistration(): void {
-    this.messageBroker.subscribe<MessageBrokerMessage>(
-      BrokerTopic.ROUTER_REGISTER,
-      async (message, replayTo) => {
-        const routerServiceId: string = this.registerRouterService();
+  private subscribeRouterConfigAdd(): Observable<void> {
+    return this.databaseListener.subscribe<RouterConfigChange>(DatabaseTopic.ROUTER_CONFIG_ADD)
+      .pipe(
+        map(
+          (message) => {
+            this.routerConfigService.add(message.config);
+            return message;
+          }
+        ),
+        map(
+          (message) => {
+            return {
+              ...message,
+              routerServiceId: this.routerServiceManager.getMinRouterService()
+            };
+          }
+        ),
+        filter(({ routerServiceId }) => !isNil(routerServiceId)),
+        switchMap(
+          ({ routerServiceId, config }) =>
+            this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_ADD, routerServiceId!, config)
+        )
+      );
+  }
 
-        await this.messageBroker.publish<RouterRegistration>(
-          BrokerTopic.ROUTER_REGISTER,
-          { id: routerServiceId },
-          replayTo
-        );
-
+  private subscribeRouterRegistration(): Observable<void> {
+    return this.messageBroker.subscribe<MessageBrokerMessage<void>>(BrokerTopic.ROUTER_REGISTER)
+      .pipe(
+        map(({ replayTo }) => ({
+          replayTo,
+          message: { id: this.registerRouterService() }
+        })),
+        switchMap(({ replayTo, message }) => (
+          this.messageBroker.publish<RouterRegistration>(
+            BrokerTopic.ROUTER_REGISTER,
+            message,
+            replayTo
+          )
+        )),
         // todo: divide router configs into all available services
-      }
-    );
+      );
   }
 
-  private unsubscribeRouterRegistration(): void {
-    this.messageBroker.subscribe<RouterRegistration>(
-      BrokerTopic.ROUTER_UNREGISTER,
-      async (message) => {
-        const routerConfigs: Set<number> = this.routerServiceManager.unregister(message.id);
-
-        for (const result of this.routerServiceManager.splitEqually(routerConfigs)) {
-          await this.sendMessageToRouterService(
-            BrokerTopic.ROUTER_CONFIG_ADD,
-            result.routerServiceId,
-            Array.from(result.configIds).map(configId => this.routerConfigService.get(configId)!)
-          );
-        }
-      }
-    );
+  private unsubscribeRouterRegistration(): Observable<void> {
+    return this.messageBroker.subscribe<RouterRegistration>(BrokerTopic.ROUTER_UNREGISTER)
+      .pipe(
+        map(message => message.message.id),
+        map(id => this.routerServiceManager.unregister(id)),
+        mergeMap(routerConfigs => this.routerServiceManager.splitEqually(routerConfigs)),
+        map(({ configIds, routerServiceId }) => ({
+          routerServiceId,
+          configIds: Array.from(configIds).map(configId => this.routerConfigService.get(configId)!)
+        })),
+        switchMap(({ configIds, routerServiceId }) => (
+          this.sendMessageToRouterService(BrokerTopic.ROUTER_CONFIG_ADD, routerServiceId, configIds)
+        ))
+      );
   }
 
   private registerRouterService(): string {
@@ -133,12 +180,12 @@ export class RouterManagerService {
     return routerServiceId;
   }
 
-  private async sendMessageToRouterService(
+  private sendMessageToRouterService(
     topic: BrokerTopic,
     routerServiceId: string,
     configs: RouterConfig | RouterConfig[]
-  ): Promise<void> {
-    await this.messageBroker.publish<RouterConfigChanges>(
+  ): Observable<void> {
+    return this.messageBroker.publish<RouterConfigChanges>(
       this.routerServiceUtility.buildRouterServiceTopic(topic, routerServiceId),
       { configs: Array.isArray(configs) ? configs : [configs] }
     );
