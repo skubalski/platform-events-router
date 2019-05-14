@@ -1,8 +1,8 @@
-import { Service } from 'typedi';
 import { EntityRepository, Repository } from 'typeorm';
 import { RouterConfig } from '../entity/RouterConfig';
+import { injectable } from 'inversify';
 
-@Service()
+@injectable()
 @EntityRepository(RouterConfig)
 export class RouterConfigRepository extends Repository<RouterConfig> {
 

@@ -5,10 +5,6 @@ import { Service } from 'typedi';
 
 @Service()
 export class PostgresListenerAdapter implements DatabaseListener {
-  public async connect(): Promise<void> {
-    // todo: tbi
-  }
-
   public async publish<T extends DatabaseListenerMessage>(topic: DatabaseTopic, message: T): Promise<void> {
     // todo: tbi
   }
