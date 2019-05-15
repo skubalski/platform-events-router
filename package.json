@@ -1,6 +1,11 @@
 {
   "name": "platform-events-router",
   "version": "1.0.0",
+  "repository": "https://github.com/skubalski/platform-events-router",
+  "author": {
+    "email": "s.kubalski@polsource.com",
+    "name": "Sebastian Kubalski"
+  },
   "engines": {
     "node": "9.11.x",
     "npm": "6.9.x"

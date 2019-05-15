@@ -1,0 +1,17 @@
+{
+  "name": "Platform Events Router",
+  "description": "",
+  "keywords": [
+    "TypeScript", "Platform Events", "Kafka"
+  ],
+  "repository": "https://github.com/skubalski/platform-events-router",
+  "env": {},
+  "addons": [
+    "heroku-postgresql"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/node"
+    }
+  ]
+}
