@@ -1,2 +1,2 @@
-router-manager: npm run outer-manager
+router-manager: npm run router-manager
 router-service: npm run router-service
