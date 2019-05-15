@@ -1,14 +1,13 @@
-import 'reflect-metadata';
 import { Inject, Service } from 'typedi';
 import { isNil, isEmpty } from 'lodash';
-import { MessageBroker } from '../../../../infrastructure/port/MessageBroker';
+import { MessageBroker, MessageBrokerToken } from '../../../../infrastructure/port/MessageBroker';
 import { RouterServiceUtility } from '../../utility/RouterServiceUtility';
 import { RouterRegistration } from '../../message/broker/RouterRegistration';
 import { BrokerTopic } from '../../../../config/broker/BrokerTopic';
 import { RouterConfigChanges } from '../../message/broker/RouterConfigChanges';
 import { map, filter, throwIfEmpty, switchMap, tap } from 'rxjs/operators';
 import { Observable, concat, of } from 'rxjs';
-import { SalesforceConnector } from '../../../../infrastructure/port/SalesforceConnector';
+import { SalesforceConnector, SalesforceConnectorToken } from '../../../../infrastructure/port/SalesforceConnector';
 import { RouterConfigManager } from '../../helper/RouterConfigManager';
 import { RouteManager } from '../helper/RouteManager';
 import { PlatformEventTopicGenerator } from '../utility/PlatformEventTopicGenerator';
@@ -19,13 +18,13 @@ import { ObservableUtility } from '../../router-manager/utility/ObservableUtilit
 export class RouterService {
   private serviceId: string;
 
-  @Inject()
+  @Inject(MessageBrokerToken)
   private readonly messageBroker: MessageBroker;
 
   @Inject()
   private readonly routerServiceUtility: RouterServiceUtility;
 
-  @Inject()
+  @Inject(SalesforceConnectorToken)
   private readonly salesforceConnector: SalesforceConnector;
 
   @Inject()

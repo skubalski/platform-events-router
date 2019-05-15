@@ -2,8 +2,8 @@ import { Inject, Service } from 'typedi';
 import { InjectRepository } from 'typeorm-typedi-extensions';
 import { RouterConfigRepository } from '../reporitory/RouterConfigRepository';
 import { RouterConfig } from '../entity/RouterConfig';
-import { MessageBroker, MessageBrokerMessage } from '../../../../infrastructure/port/MessageBroker';
-import { DatabaseListener } from '../../../../infrastructure/port/DatabaseListener';
+import { MessageBroker, MessageBrokerMessage, MessageBrokerToken } from '../../../../infrastructure/port/MessageBroker';
+import { DatabaseListener, DatabaseListenerToken } from '../../../../infrastructure/port/DatabaseListener';
 import { DatabaseTopic } from '../../../../config/database/DatabaseTopic';
 import { BrokerTopic } from '../../../../config/broker/BrokerTopic';
 import { RouterRegistration } from '../../message/broker/RouterRegistration';
@@ -22,10 +22,10 @@ export class RouterManagerService {
   @InjectRepository()
   private readonly routerConfigRepository: RouterConfigRepository;
 
-  @Inject()
+  @Inject(MessageBrokerToken)
   private readonly messageBroker: MessageBroker;
 
-  @Inject()
+  @Inject(DatabaseListenerToken)
   private readonly databaseListener: DatabaseListener;
 
   @Inject()

@@ -1,8 +1,8 @@
-import { SalesforceConnector } from '../port/SalesforceConnector';
+import { SalesforceConnector, SalesforceConnectorToken } from '../port/SalesforceConnector';
 import { Observable, of } from 'rxjs';
 import { Service } from 'typedi';
 
-@Service()
+@Service(SalesforceConnectorToken)
 export class JSForceSalesforceConnector implements SalesforceConnector {
   public subscribe<T>(topic: string): Observable<T> {
     // todo: tbi

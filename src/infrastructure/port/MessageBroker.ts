@@ -1,5 +1,6 @@
 import { BrokerTopic } from '../../config/broker/BrokerTopic';
 import { Observable } from 'rxjs';
+import { Token } from 'typedi';
 
 export interface MessageBrokerMessage<T> {
   message: T;
@@ -15,3 +16,5 @@ export interface MessageBroker {
 
   requestOnce<T, R>(topic: BrokerTopic | string, message?: T): Observable<R>;
 }
+
+export const MessageBrokerToken = new Token<MessageBroker>();

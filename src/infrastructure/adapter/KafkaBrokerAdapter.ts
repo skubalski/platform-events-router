@@ -1,10 +1,9 @@
-import 'reflect-metadata';
-import { MessageBroker } from '../port/MessageBroker';
+import { MessageBroker, MessageBrokerToken } from '../port/MessageBroker';
 import { BrokerTopic } from '../../config/broker/BrokerTopic';
 import { Service } from 'typedi';
 import { Observable, of } from 'rxjs';
 
-@Service()
+@Service(MessageBrokerToken)
 export class KafkaBrokerAdapter implements MessageBroker {
   public publish<T>(
     topic: BrokerTopic | string,
