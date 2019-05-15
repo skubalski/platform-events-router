@@ -5,6 +5,10 @@
     "node": "9.11.x",
     "npm": "6.9.x"
   },
+  "scripts": {
+    "router-manager": "ts-node src/domain/router/router-manager/index.ts",
+    "router-service": "ts-node src/domain/router/router-service/index.ts"
+  },
   "dependencies": {
     "class-transformer": "^0.2.2",
     "jsforce": "^1.9.1",
